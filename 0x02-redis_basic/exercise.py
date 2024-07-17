@@ -5,7 +5,7 @@
 import redis
 import uuid
 import functools
-from typing import Union, Callable, Optional, Any
+from typing import Union, Callable, Optional, Any, Tuple, List
 
 
 def count_calls(method: Callable) -> Callable:
@@ -130,3 +130,18 @@ class Cache:
                  does not exist.
         """
         return self.get(key, lambda x: int(x))
+
+    def replay(self, method_name: str) -> Tuple[List[str], List[str]]:
+        """
+        Retrieve the history of inputs and outputs for a particular method.
+
+        :param method_name: The name of the method to retrieve history for.
+        :return: A tuple containing lists of inputs and outputs.
+        """
+        input_key = f"{method_name}:inputs"
+        output_key = f"{method_name}:outputs"
+
+        inputs = self._redis.lrange(input_key, 0, -1)
+        outputs = self._redis.lrange(output_key, 0, -1)
+
+        return inputs, outputs
